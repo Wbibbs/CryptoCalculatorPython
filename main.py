@@ -1,46 +1,77 @@
-from coin import Coin as coinClass
-import urllib.request, json, datetime, 
+import gui
+import json
+import urllib.request
+import datetime
+
 import coin
+from coin import Coin as coinClass
+# from oauth2client.service_account import ServiceAccountCredentials
+# from googleapiclient.discovery import build
+# from googleapiclient.http import MediaFileUpload
 
-def getData(coinNum) :
+
+def get_data(coin_num):
     from urllib.request import urlopen
-    url = "https://api.coinmarketcap.com/v2/ticker/" + str(coinNum)
+    url = "https://api.coinmarketcap.com/v2/ticker/" + str(coin_num)
     html = urlopen(url)
-    stringContents = html.read().decode("utf-8")
-    objectContents = json.load(stringContents)
-    return objectContents #Returns a json object
+    string_contents = html.read().decode("utf-8")
+    object_contents = json.load(string_contents)
+    return object_contents  # Returns a json object
 
-def printInfo(c):
-    print(str(c.nameOfCoin) + ", " + str(c.coinSymbol) + ", " + str(c.rank) + ", " + str(c.totalSupply) + ", " + str(c.maxSupply) + ", " + str(c.priceUSD) + ", " + str(c.percentHour) + ", " + str(c.percentDay) + ", " + str(c.percentWeek))
 
-def getInfo(c):
-    return str(c.nameOfCoin) + ", " + str(c.coinSymbol) + ", " + str(c.rank) + ", " + str(c.totalSupply) + ", " + str(c.maxSupply) + ", " + str(c.priceUSD) + ", " + str(c.percentHour) + ", " + str(c.percentDay) + ", " + str(c.percentWeek)
-    
-def printInfoList(c):
+def print_info(c):
+    print(str(c.nameOfCoin) + ", "
+          + str(c.coinSymbol) + ", "
+          + str(c.rank) + ", "
+          + str(c.totalSupply) + ", "
+          + str(c.maxSupply) + ", "
+          + str(c.priceUSD) + ", "
+          + str(c.percentHour) + ", "
+          + str(c.percentDay) + ", "
+          + str(c.percentWeek))
+
+
+def get_info(c):
+    return str(c.nameOfCoin) + ", " \
+           + str(c.coinSymbol) + ", " \
+           + str(c.rank) + ", " \
+           + str(c.totalSupply) + ", " \
+           + str(c.maxSupply) + ", " \
+           + str(c.priceUSD) + ", " \
+           + str(c.percentHour) + ", " \
+           + str(c.percentDay) + ", " \
+           + str(c.percentWeek)
+
+
+def print_info_list(c):
     for coin in c:
-        printInfo(coin)
+        print_info(coin)
 
-def printList(c):
+
+def print_list(c):
     for coin in c:
         print(coin)
-        
-def getDictionary():
-    tempDict = {}
+
+
+def get_dictionary():
+    temp_dict = {}
     url = "https://api.coinmarketcap.com/v2/listings/"
-    moreurl = urllib.request.urlopen(url)
-    obj = json.load(moreurl)
+    more_url = urllib.request.urlopen(url)
+    obj = json.load(more_url)
     
     for x in range(len(obj["data"])):
-        if not x in tempDict:
-            tempDict[str(obj["data"][x]["name"].lower())] = obj["data"][x]["id"]
-            tempDict[str(obj["data"][x]["symbol"].lower())] = obj["data"][x]["id"]
+        if x not in temp_dict:
+            temp_dict[str(obj["data"][x]["name"].lower())] = obj["data"][x]["id"]
+            temp_dict[str(obj["data"][x]["symbol"].lower())] = \
+                obj["data"][x]["id"]
     
-    return tempDict
+    return temp_dict
 
-def makeCoins():
-    for name in coinLookupList:
+
+def make_coins():
+    for name in coin_lookup_list:
         try:
-            url = "https://api.coinmarketcap.com/v2/ticker/" + str(coinDict[name])
+            url = "https://api.coinmarketcap.com/v2/ticker/" + str(coin_dict[name])
         except:
             print("Error: " + name + " does not exist!")
         
@@ -50,9 +81,12 @@ def makeCoins():
         c.setInfo(obj)
         coins.append(c)
 
-def writeCSV():
+
+def write_CSV():
     file = open("data.csv", "a+")
-    header = "Name, Symbol, Rank, Total Supply, Max Supply, Price in USD, Percent Change Last Hour, Percent Change Last 24 Hours, Percent Change Last Week"
+    header = "Name, Symbol, Rank, Total Supply, Max Supply, Price in USD," \
+             "Percent Change Last Hour, Percent Change Last 24 Hours," \
+             "Percent Change Last Week"
     date = datetime.datetime.now()
     
     file.write("\nDate\n\n")
@@ -60,46 +94,43 @@ def writeCSV():
     file.write(header + "\n")
         
     for coin in coins:
-        print(getInfo(coin))
+        print(get_info(coin))
         print("Writing " + coin.nameOfCoin)
-        file.write(getInfo(coin) + "\n")
+        file.write(get_info(coin) + "\n")
     file.close()
+    
+# def upload_to_drive():
+#    file_metadata = {
+#    'name': 'My Report',
+#    'mimeType': 'application/vnd.google-apps.spreadsheet'
+#    }
+#    media = MediaFileUpload('files/report.csv',mimetype='text/csv',
+#    resumable=True)
+#    file = drive_service.files().create(body=file_metadata,media_body=media,
+#    fields='id').execute()
+#    print ('File ID: %s' % file.get('id'))
 
-def uploadToDrive():
-    file_metadata = {
-    'name': 'My Report',
-    'mimeType': 'application/vnd.google-apps.spreadsheet'
-    }
-    media = MediaFileUpload('files/report.csv',mimetype='text/csv',resumable=True)
-    file = drive_service.files().create(body=file_metadata,media_body=media,fields='id').execute()
-    print 'File ID: %s' % file.get('id')
 
-
-coinDict = dict()
-coinDict = getDictionary()
-coinLookupList = []
+coin_dict = dict()
+coin_dict = get_dictionary()
+coin_lookup_list = []
 coins = []
 run = True
 
 while run:
-    inString = input("Enter a coin to look up: ").lower()
+    in_string = input("Enter a coin to look up: ").lower()
     
-    if inString in coinLookupList: #Need to figure out a method to test both full names and symbol names ex. btc and bitcoin count for btc or bitcoin in the lookup list
-        print(inString + " is already in the search list")
+    if in_string in coin_lookup_list:
+        print(in_string + " is already in the search list")
     else:
-        if inString.__eq__("quit"):
+        if in_string.__eq__("quit"):
             break
         
-        if not inString in coinDict:
-            print(inString + " does not exist!")
+        if in_string not in coin_dict:
+            print(in_string + " does not exist!")
         else:
-            coinLookupList.append(inString)
+            coin_lookup_list.append(in_string)
 
-makeCoins()
-
-print("Done with while")
-
-writeCSV()
-
-print("Passed writeCSV")
-printInfoList(coins)
+make_coins()
+write_CSV()
+print_info_list(coins)
